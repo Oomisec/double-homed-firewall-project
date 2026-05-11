@@ -1,0 +1,19 @@
+---
+- name: Fixa DNS på database
+  copy:
+    content: "nameserver 8.8.8.8\n"
+    dest: /etc/resolv.conf
+
+- name: Installera PostgreSQL
+  apt:
+    name:
+      - postgresql
+      - postgresql-contrib
+    state: present
+    update_cache: yes
+
+- name: Starta och aktivera PostgreSQL
+  service:
+    name: postgresql
+    state: started
+    enabled: yes

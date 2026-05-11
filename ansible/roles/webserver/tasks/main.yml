@@ -1,0 +1,27 @@
+---
+- name: Fixa DNS på webserver
+  copy:
+    content: "nameserver 8.8.8.8\n"
+    dest: /etc/resolv.conf
+
+- name: Installera Apache
+  apt:
+    name: apache2
+    state: present
+    update_cache: yes
+
+- name: Starta och aktivera Apache
+  service:
+    name: apache2
+    state: started
+    enabled: yes
+
+- name: Skapa enkel testsida
+  copy:
+    content: |
+      <html>
+        <body>
+          <h1>Webbserver - Double-homed firewall projekt</h1>
+        </body>
+      </html>
+    dest: /var/www/html/index.html

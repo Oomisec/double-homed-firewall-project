@@ -1,0 +1,26 @@
+---
+- name: Inaktivera root-inloggning via SSH
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^PermitRootLogin'
+    line: 'PermitRootLogin no'
+    state: present
+
+- name: Tillåt endast nyckelbaserad autentisering
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^PasswordAuthentication'
+    line: 'PasswordAuthentication no'
+    state: present
+
+- name: Sätt MaxAuthTries till 3
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^MaxAuthTries'
+    line: 'MaxAuthTries 3'
+    state: present
+
+- name: Starta om SSH
+  service:
+    name: ssh
+    state: restarted
