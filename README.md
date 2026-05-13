@@ -4,23 +4,8 @@ Nätverkssegmentering med en dedikerad brandvägg som kontrollerar all trafik me
 
 ## Arkitektur
 
-```
-[Klient-VM]          [Webbserver-VM]       [Databas-VM]
- 10.0.1.2             10.0.4.2              10.0.3.2
-     |                     |                    |
-  frontend-net          dmz-net            backend-net
-     |                     |                    |
-     +-------[Brandvägg-VM]--------+------------+
-              10.0.1.1 | 10.0.4.1 | 10.0.3.1
-```
+![Nätverkstopologi](labb_diagram.png)
 
-## Trafikflöden
-
-| Från | Till | Port | Tillåten |
-|------|------|------|----------|
-| Klient | Webbserver | 80/443 | ✅ Ja |
-| Webbserver | Databas | 5432 | ✅ Ja |
-| Klient | Databas | Alla | ❌ Nej |
 
 ## Krav
 
