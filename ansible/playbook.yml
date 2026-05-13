@@ -18,3 +18,8 @@
   become: yes
   roles:
     - database
+
+- hosts: client
+  become: yes
+  roles:
+    - client

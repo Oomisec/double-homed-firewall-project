@@ -25,3 +25,11 @@
         </body>
       </html>
     dest: /var/www/html/index.html
+
+- name: Lägg till route till client-nät
+  command: ip route add 10.0.1.0/24 via 10.0.4.1
+  ignore_errors: yes
+
+- name: Lägg till route till databas-nät
+  command: ip route add 10.0.3.0/24 via 10.0.4.1
+  ignore_errors: yes

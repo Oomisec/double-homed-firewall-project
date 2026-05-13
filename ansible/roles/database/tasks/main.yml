@@ -17,3 +17,14 @@
     name: postgresql
     state: started
     enabled: yes
+
+- name: Konfigurera PostgreSQL att lyssna på rätt IP
+  lineinfile:
+    path: /etc/postgresql/14/main/postgresql.conf
+    regexp: "^#?listen_addresses"
+    line: "listen_addresses = '10.0.3.2,localhost'"
+  notify: Starta om postgresql
+
+- name: Lägg till route via firewall
+  command: ip route add 10.0.0.0/8 via 10.0.3.1
+  ignore_errors: yes

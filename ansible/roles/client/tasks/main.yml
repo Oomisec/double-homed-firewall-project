@@ -1,0 +1,4 @@
+---
+- name: Lägg till route till webserver-nät
+  command: ip route add 10.0.4.0/24 via 10.0.1.1
+  ignore_errors: yes
