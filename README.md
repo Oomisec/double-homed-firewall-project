@@ -4,7 +4,7 @@ Nätverkssegmentering med en dedikerad brandvägg som kontrollerar all trafik me
 
 ## Arkitektur
 
-![Nätverkstopologi](labb_diagram.png)
+![Nätverkstopologi](diagram .png)
 
 
 ## Krav
