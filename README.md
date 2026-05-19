@@ -12,7 +12,7 @@ Nätverkssegmentering med en dedikerad brandvägg som kontrollerar all trafik me
 
 ## 📐 Arkitektur
 
-![Nätverkstopologi](Diagram_1.png)
+![Nätverkstopologi](diagram.png)
 
 | Zon | VM | IP | Nätverk |
 |-----|----|----|---------|
@@ -81,6 +81,7 @@ nc -zv 10.0.3.2 5432
 | Nätverkssegmentering | 3 isolerade zoner via VirtualBox intnet |
 | Brandväggsregler | iptables med minsta privilegium — policy DROP som standard |
 | SSH-härdning | Root-inloggning inaktiverad, nyckelbaserad autentisering, MaxAuthTries 3 |
+| Loggning | Systemloggning aktiverat via journald på alla VM:er |
 
 ---
 
@@ -96,6 +97,12 @@ nc -zv 10.0.3.2 5432
 - Reproducerbar miljö — `vagrant up` ger identisk miljö varje gång
 - Säker testmiljö — brandväggsregler kan testas utan risk för produktionsmiljön
 - Kostnadseffektivt — flera isolerade servrar på en fysisk maskin
+
+---
+
+## 🔄 Skalbarhet och redundans
+
+Varje tjänst körs på en dedikerad VM — en server per roll. Om webbservern är nere påverkas inte databasen. En naturlig nästa steg vore att lägga till en andra webbserver för redundans.
 
 ---
 
