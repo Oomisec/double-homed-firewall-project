@@ -116,7 +116,30 @@ Varje tjänst körs på en dedikerad VM — en server per roll. Om webbservern �
 
 ---
 
+## Hotmodellering (STRIDE-inspirerad)
+
+| Hot | Kategori | Sannolikhet | Konsekvens | Implementerad motåtgärd |
+|-----|----------|-------------|------------|-------------------------|
+| Angripare brute-forcar SSH | Spoofing | Hög | Hög | MaxAuthTries 3, nyckelautentisering, root-inloggning inaktiverad |
+| Komprometterad webbserver når databasen | Elevation of Privilege | Medel | Kritisk | Segmentering + DROP-policy, webb→databas endast port 5432 |
+| Portskanning av interna nät | Information Disclosure | Hög | Medel | DROP-policy ger inget svar — portar avslöjas inte |
+| Avlyssning av databasanslutning | Information Disclosure | Låg | Hög | Ej åtgärdat — identifierat som brist nr 2 |
+| Tjänstkrasch går oupptäckt | Denial of Service | Medel | Medel | Ej åtgärdat — identifierat som brist nr 5 |
+
+---
+
+## Köra verifieringsskriptet
+
+Automatiserat skript som verifierar alla trafikflöden utan manuella steg:
+
+```bash
+bash verify.sh
+```
+
+
+
 ## 📁 Mappstruktur
+
 
 ```
 double-homed-firewall-project/
