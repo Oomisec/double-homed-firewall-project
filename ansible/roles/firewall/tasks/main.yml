@@ -57,6 +57,13 @@
     chain: FORWARD
     policy: DROP
 
+- name: Logga dropped paket
+  iptables:
+    chain: FORWARD
+    jump: LOG
+    log_prefix: "FW-DROP: "
+    log_level: 4
+
 - name: Spara iptables-regler
   command: netfilter-persistent save
 
