@@ -80,7 +80,7 @@ bash /vagrant/verify.sh
 
 **Förväntat resultat:** `5/6 PASS` eller `6/6 PASS` — samma resultat varje gång oavsett hur många gånger miljön rivs och byggs upp igen.
 
-Detta uppfyller F3-kravet på VG-nivå — miljön är inte bara reproducerbar i teorin utan verifierbar i praktiken via verify.sh.
+Miljön är inte bara reproducerbar i teorin — den är verifierbar i praktiken via verify.sh som bekräftar att alla trafikflöden och säkerhetsregler fungerar identiskt efter varje återuppbyggnad.
 
 ## ✅ Verifiera att allt fungerar
 
