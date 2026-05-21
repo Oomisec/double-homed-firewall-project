@@ -70,13 +70,14 @@ nc -zv 10.0.3.2 5432
 
 ## 🛡️ Säkerhetsåtgärder
 
-| Åtgärd | Beskrivning |
-|--------|-------------|
-| ✅ Nätverkssegmentering | 3 isolerade zoner via VirtualBox intnet |
-| ✅ Brandväggsregler | iptables med policy DROP som standard |
-| ✅ SSH-härdning | Root-inloggning inaktiverad, nyckelbaserad autentisering, MaxAuthTries 3 |
-| ✅ Loggning | Systemloggning aktiverat via journald på alla VM:er |
+Varje åtgärd är kopplad till ett konkret hot och verifierbar i miljön.
 
+| Åtgärd | Vad den gör | Skyddar mot | Verifiering |
+|--------|-------------|-------------|-------------|
+| ✅ Nätverkssegmentering | Delar upp miljön i tre isolerade zoner via VirtualBox intnet. VM:er kan inte kommunicera direkt — all trafik tvingas via brandväggen. | Lateral movement — om webbservern komprometteras kan angriparen inte nå databasen direkt. | `curl --connect-timeout 5 10.0.3.2` från client → timeout |
+| ✅ iptables DROP-policy | Blockerar all trafik som standard. Öppnar enbart port 80 och port 5432 med specifika source/destination IP. | Principle of least privilege — angripare kan inte skanna eller nå andra portar. | `sudo iptables -L FORWARD -n -v` visar specifika IP på varje ACCEPT-regel |
+| ✅ SSH-härdning | Inaktiverar root-inloggning, kräver nyckelbaserad autentisering, sätter MaxAuthTries till 3. Konfigureras via Ansible på alla VM:er. | Brute force och credential stuffing — root-kontot är vanligaste målet vid automatiserade attacker. | `grep 'PermitRootLogin\|PasswordAuthentication\|MaxAuthTries' /etc/ssh/sshd_config` |
+| ✅ FW-DROP loggning | Alla blockerade paket loggas med prefixet FW-DROP i kernel-loggen via iptables LOG-regel i Ansible-rollen. | Oupptäckta intrångsförsök — utan loggning syns inte portskanning eller attacker. | `sudo dmesg \| grep "FW-DROP"` visar blockerade försök i realtid |
 ---
 
 ## ⚠️ Kvarvarande säkerhetsbrister
