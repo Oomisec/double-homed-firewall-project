@@ -1,7 +1,4 @@
 #!/bin/bash
-# verify.sh — Automatiserat verifieringsskript (VG-nivå)
-# Kör efter: vagrant up && bash /vagrant/setup_keys.sh && ansible-playbook
-
 PASS=0
 FAIL=0
 ERRORS=()
@@ -27,58 +24,52 @@ echo " Double-homed Firewall — Verifieringsskript"
 echo "========================================"
 echo ""
 
-echo "[1/5] Klient → webbserver (port 80, ska fungera)"
-HTTP=$(vagrant ssh client -c \
+echo "[1/9] Klient → webbserver (port 80, ska fungera)"
+HTTP=$(ssh -o StrictHostKeyChecking=no vagrant@10.0.1.2 \
   "curl -s -o /dev/null -w '%{http_code}' --connect-timeout 5 http://10.0.4.2" \
   2>/dev/null | tr -d '\r')
 check "HTTP 200 från Apache" "$HTTP" "200"
 
-echo "[2/5] Klient → databas direkt (port 5432, ska blockeras)"
-BLOCKED=$(vagrant ssh client -c \
+echo "[2/9] Klient → databas direkt (port 5432, ska blockeras)"
+BLOCKED=$(ssh -o StrictHostKeyChecking=no vagrant@10.0.1.2 \
   "curl --connect-timeout 5 -s 10.0.3.2:5432 2>&1 | grep -c -i 'timeout\|refused\|timed out'" \
   2>/dev/null | tr -d '\r')
 check "Anslutning blockeras av brandväggen" "$BLOCKED" "1"
 
-echo "[3/5] Webbserver → databas (port 5432, ska fungera)"
-DB=$(vagrant ssh webserver -c \
+echo "[3/9] Webbserver → databas (port 5432, ska fungera)"
+DB=$(ssh -o StrictHostKeyChecking=no vagrant@10.0.4.2 \
   "nc -zv 10.0.3.2 5432 2>&1 | grep -c succeeded" \
   2>/dev/null | tr -d '\r')
 check "PostgreSQL nåbar från webbservern" "$DB" "1"
 
-echo "[4/5] SSH-härdning — root-inloggning inaktiverad"
-ROOT=$(vagrant ssh firewall -c \
+echo "[4/9] SSH-härdning — root-inloggning inaktiverad"
+ROOT=$(ssh -o StrictHostKeyChecking=no vagrant@10.0.1.1 \
   "grep -c 'PermitRootLogin no' /etc/ssh/sshd_config" \
   2>/dev/null | tr -d '\r')
 check "PermitRootLogin no i sshd_config" "$ROOT" "1"
 
-echo "[5/5] Brandvägg — FORWARD-policy är DROP"
-POLICY=$(vagrant ssh firewall -c \
-  "sudo iptables -L FORWARD | head -1 | grep -c 'DROP'" \
-  2>/dev/null | tr -d '\r')
+echo "[5/9] Brandvägg — FORWARD-policy är DROP"
+POLICY=$(sudo iptables -L FORWARD | head -1 | grep -c 'DROP')
 check "iptables FORWARD policy DROP" "$POLICY" "1"
 
 echo "[6/9] Brandvägg — FW-DROP loggningsregel aktiv"
-LOG=$(vagrant ssh firewall -c \
-  "sudo iptables -L FORWARD | grep -c 'LOG'" \
-  2>/dev/null | tr -d '\r')
+LOG=$(sudo iptables -L FORWARD | grep -c 'LOG')
 check "FW-DROP loggningsregel aktiv" "$LOG" "1"
 
 echo "[7/9] Health check — Apache körs på webbservern"
-APACHE=$(vagrant ssh webserver -c \
+APACHE=$(ssh -o StrictHostKeyChecking=no vagrant@10.0.4.2 \
   "systemctl is-active apache2" \
   2>/dev/null | tr -d '\r')
 check "Apache är aktiv" "$APACHE" "active"
 
 echo "[8/9] Health check — PostgreSQL körs på databasen"
-POSTGRES=$(vagrant ssh database -c \
+POSTGRES=$(ssh -o StrictHostKeyChecking=no vagrant@10.0.3.2 \
   "systemctl is-active postgresql" \
   2>/dev/null | tr -d '\r')
 check "PostgreSQL är aktiv" "$POSTGRES" "active"
 
 echo "[9/9] Health check — iptables är aktiv på brandväggen"
-IPTABLES=$(vagrant ssh firewall -c \
-  "sudo iptables -L FORWARD | grep -c 'ACCEPT'" \
-  2>/dev/null | tr -d '\r')
+IPTABLES=$(sudo iptables -L FORWARD | grep -c 'ACCEPT')
 check "iptables ACCEPT-regler aktiva" "$IPTABLES" "3"
 
 echo ""
