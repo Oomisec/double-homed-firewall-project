@@ -18,6 +18,11 @@ check() {
   fi
 }
 
+KEY_CLIENT=~/.ssh/vagrant_keys/client
+KEY_WEB=~/.ssh/vagrant_keys/webserver
+KEY_DB=~/.ssh/vagrant_keys/database
+SSH_OPTS="-o StrictHostKeyChecking=no"
+
 echo ""
 echo "========================================"
 echo " Double-homed Firewall — Verifieringsskript"
@@ -25,25 +30,25 @@ echo "========================================"
 echo ""
 
 echo "[1/9] Klient → webbserver (port 80, ska fungera)"
-HTTP=$(ssh -o StrictHostKeyChecking=no vagrant@10.0.1.2 \
+HTTP=$(ssh $SSH_OPTS -i $KEY_CLIENT vagrant@10.0.1.2 \
   "curl -s -o /dev/null -w '%{http_code}' --connect-timeout 5 http://10.0.4.2" \
   2>/dev/null | tr -d '\r')
 check "HTTP 200 från Apache" "$HTTP" "200"
 
 echo "[2/9] Klient → databas direkt (port 5432, ska blockeras)"
-BLOCKED=$(ssh -o StrictHostKeyChecking=no vagrant@10.0.1.2 \
+BLOCKED=$(ssh $SSH_OPTS -i $KEY_CLIENT vagrant@10.0.1.2 \
   "curl --connect-timeout 5 -s 10.0.3.2:5432 2>&1 | grep -c -i 'timeout\|refused\|timed out'" \
   2>/dev/null | tr -d '\r')
 check "Anslutning blockeras av brandväggen" "$BLOCKED" "1"
 
 echo "[3/9] Webbserver → databas (port 5432, ska fungera)"
-DB=$(ssh -o StrictHostKeyChecking=no vagrant@10.0.4.2 \
+DB=$(ssh $SSH_OPTS -i $KEY_WEB vagrant@10.0.4.2 \
   "nc -zv 10.0.3.2 5432 2>&1 | grep -c succeeded" \
   2>/dev/null | tr -d '\r')
 check "PostgreSQL nåbar från webbservern" "$DB" "1"
 
 echo "[4/9] SSH-härdning — root-inloggning inaktiverad"
-ROOT=$(ssh -o StrictHostKeyChecking=no vagrant@10.0.1.1 \
+ROOT=$(ssh $SSH_OPTS -i $KEY_CLIENT vagrant@10.0.1.2 \
   "grep -c 'PermitRootLogin no' /etc/ssh/sshd_config" \
   2>/dev/null | tr -d '\r')
 check "PermitRootLogin no i sshd_config" "$ROOT" "1"
@@ -57,20 +62,20 @@ LOG=$(sudo iptables -L FORWARD | grep -c 'LOG')
 check "FW-DROP loggningsregel aktiv" "$LOG" "1"
 
 echo "[7/9] Health check — Apache körs på webbservern"
-APACHE=$(ssh -o StrictHostKeyChecking=no vagrant@10.0.4.2 \
+APACHE=$(ssh $SSH_OPTS -i $KEY_WEB vagrant@10.0.4.2 \
   "systemctl is-active apache2" \
   2>/dev/null | tr -d '\r')
 check "Apache är aktiv" "$APACHE" "active"
 
 echo "[8/9] Health check — PostgreSQL körs på databasen"
-POSTGRES=$(ssh -o StrictHostKeyChecking=no vagrant@10.0.3.2 \
+POSTGRES=$(ssh $SSH_OPTS -i $KEY_DB vagrant@10.0.3.2 \
   "systemctl is-active postgresql" \
   2>/dev/null | tr -d '\r')
 check "PostgreSQL är aktiv" "$POSTGRES" "active"
 
 echo "[9/9] Health check — iptables är aktiv på brandväggen"
 IPTABLES=$(sudo iptables -L FORWARD | grep -c 'ACCEPT')
-check "iptables ACCEPT-regler aktiva" "$IPTABLES" "3"
+check "iptables ACCEPT-regler aktiva" "$IPTABLES" "4"
 
 echo ""
 echo "========================================"
