@@ -66,8 +66,10 @@
 
 - name: Spara iptables-regler
   command: netfilter-persistent save
+  changed_when: false
 
 - name: Kopiera SSH-nycklar automatiskt
   shell: /vagrant/setup_keys.sh
   args:
     executable: /bin/bash
+  changed_when: false
