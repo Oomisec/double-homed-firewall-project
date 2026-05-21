@@ -107,17 +107,17 @@ Bristerna nedan är identifierade genom hotmodellering av miljön. De är kända
 
 ---
 
-## 💡 Fördelar med virtualisering
+## 💡 Fördelar med virtualisering — kopplat till designbeslut
 
-| | |
-|---|---|
-| 🔒 Isolerade miljöer | Ett fel i en VM påverkar inte de andra |
-| ♻️ Identisk miljö | Vagrant startar exakt samma miljö varje gång |
-| 🧪 Säker testmiljö | Brandväggsregler kan testas utan risk |
-| 💰 Kostnadseffektivt | Flera isolerade servrar på en fysisk maskin |
+Virtualiseringsfördelarna är inte bara teoretiska — varje fördel är direkt kopplad till ett konkret beslut i projektet.
 
----
-
+| Fördel | Hur det används i projektet | Konkret designbeslut |
+|--------|----------------------------|----------------------|
+| 🔒 Isolerade miljöer | Varje VM har ett eget nätverksgränssnitt — ett fel eller intrång i webbservern påverkar inte databasen | Tre separata VirtualBox intnet-nätverk istället för ett gemensamt |
+| ♻️ Identisk miljö | `vagrant destroy && vagrant up` startar exakt samma miljö varje gång — inga manuella steg | Vagrantfile definierar alla 4 VM:er med fasta IP-adresser och nätverkskopplingar |
+| 🧪 Säker testmiljö | Brandväggsregler kan testas och verifieras utan risk för produktionspåverkan | verify.sh körs mot miljön efter varje `ansible-playbook` för att bekräfta att reglerna fungerar |
+| 💰 Kostnadseffektivt | Fyra isolerade servrar med dedikerade roller körs på en fysisk maskin | En server per roll (brandvägg, webbserver, databas, klient) utan hårdvarukostnad |
+| 🔁 Repeterbarhet | Ansible-playbooken är idempotent — `changed=0` på firewall-rollen vid andra körningen | `changed_when: false` på command-tasks säkerställer korrekt idempotensrapportering |
 ## 🔄 Skalbarhet och redundans
 
 Varje tjänst körs på en dedikerad VM — en server per roll. Om webbservern är nere påverkas inte databasen. En naturlig nästa steg vore att lägga till en andra webbserver för redundans.
