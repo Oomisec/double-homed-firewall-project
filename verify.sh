@@ -35,9 +35,9 @@ HTTP=$(ssh $SSH_OPTS -i $KEY_CLIENT vagrant@10.0.1.2 \
   2>/dev/null | tr -d '\r')
 check "HTTP 200 från Apache" "$HTTP" "200"
 
-echo "[2/9] Klient → databas direkt (port 5432, ska blockeras)"
+echo "[2/9] Klient → databas direkt (ska blockeras)"
 BLOCKED=$(ssh $SSH_OPTS -i $KEY_CLIENT vagrant@10.0.1.2 \
-  "curl --connect-timeout 5 -s 10.0.3.2:5432 2>&1 | grep -c -i 'timeout\|refused\|timed out'" \
+  "sudo ip route add 10.0.3.0/24 via 10.0.1.1 2>/dev/null; curl --connect-timeout 5 -s 10.0.3.2:5432 2>&1 | grep -c -i 'timeout\|refused\|timed out'; sudo ip route del 10.0.3.0/24 2>/dev/null" \
   2>/dev/null | tr -d '\r')
 check "Anslutning blockeras av brandväggen" "$BLOCKED" "1"
 
