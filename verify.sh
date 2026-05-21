@@ -57,11 +57,29 @@ POLICY=$(vagrant ssh firewall -c \
   2>/dev/null | tr -d '\r')
 check "iptables FORWARD policy DROP" "$POLICY" "1"
 
-echo "[6/6] Brandvägg — FW-DROP loggningsregel aktiv"
+echo "[6/9] Brandvägg — FW-DROP loggningsregel aktiv"
 LOG=$(vagrant ssh firewall -c \
   "sudo iptables -L FORWARD | grep -c 'LOG'" \
   2>/dev/null | tr -d '\r')
 check "FW-DROP loggningsregel aktiv" "$LOG" "1"
+
+echo "[7/9] Health check — Apache körs på webbservern"
+APACHE=$(vagrant ssh webserver -c \
+  "systemctl is-active apache2" \
+  2>/dev/null | tr -d '\r')
+check "Apache är aktiv" "$APACHE" "active"
+
+echo "[8/9] Health check — PostgreSQL körs på databasen"
+POSTGRES=$(vagrant ssh database -c \
+  "systemctl is-active postgresql" \
+  2>/dev/null | tr -d '\r')
+check "PostgreSQL är aktiv" "$POSTGRES" "active"
+
+echo "[9/9] Health check — iptables är aktiv på brandväggen"
+IPTABLES=$(vagrant ssh firewall -c \
+  "sudo iptables -L FORWARD | grep -c 'ACCEPT'" \
+  2>/dev/null | tr -d '\r')
+check "iptables ACCEPT-regler aktiva" "$IPTABLES" "3"
 
 echo ""
 echo "========================================"
