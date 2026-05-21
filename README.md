@@ -78,7 +78,7 @@ ansible-playbook -i inventory.ini playbook.yml
 bash /vagrant/verify.sh
 ```
 
-**Förväntat resultat:** `5/6 PASS` eller `6/6 PASS` — samma resultat varje gång oavsett hur många gånger miljön rivs och byggs upp igen.
+**Förväntat resultat: 9/9 PASS — samma resultat varje gång oavsett hur många gånger miljön rivs och byggs upp igen.
 
 Miljön är inte bara reproducerbar i teorin — den är verifierbar i praktiken via verify.sh som bekräftar att alla trafikflöden och säkerhetsregler fungerar identiskt efter varje återuppbyggnad.
 
