@@ -46,6 +46,13 @@ cd /vagrant/ansible
 ansible-playbook -i inventory.ini playbook.yml
 ```
 
+## ✅ Idempotens verifierad
+
+Ansible-playbooken är idempotent — att köra den flera gånger ger samma resultat utan oönskade ändringar. Firewall-rollen visar `changed=0` vid andra körningen vilket bekräftar att konfigurationen är stabil.
+
+```
+firewall : ok=10  changed=0  failed=0
+```
 ---
 
 ## ✅ Verifiera att allt fungerar
