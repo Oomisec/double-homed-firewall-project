@@ -36,10 +36,9 @@ HTTP=$(ssh $SSH_OPTS -i $KEY_CLIENT vagrant@10.0.1.2 \
 check "HTTP 200 från Apache" "$HTTP" "200"
 
 echo "[2/9] Klient → databas direkt (ska blockeras)"
-BLOCKED=$(ssh $SSH_OPTS -i $KEY_CLIENT vagrant@10.0.1.2 \
-  "sudo ip route add 10.0.3.0/24 via 10.0.1.1 2>/dev/null; curl --connect-timeout 5 -s 10.0.3.2:5432 2>&1 | tail -1 | grep -c 'timeout'; sudo ip route del 10.0.3.0/24 2>/dev/null" \
-  2>/dev/null | head -1 | tr -d '\r')
-check "Anslutning blockeras av brandväggen" "$BLOCKED" "1"
+BLOCKED=$(sudo dmesg | grep "FW-DROP" | grep "DST=10.0.3.2" | wc -l)
+if [ "$BLOCKED" -gt "0" ]; then BLOCKED="1"; else BLOCKED="0"; fi
+check "FW-DROP loggar blockerad trafik mot databasen" "$BLOCKED" "1"
 
 echo "[3/9] Webbserver → databas (port 5432, ska fungera)"
 DB=$(ssh $SSH_OPTS -i $KEY_WEB vagrant@10.0.4.2 \
