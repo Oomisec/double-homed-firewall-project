@@ -146,13 +146,25 @@ bash verify.sh
 
 
 
-## 📁 Mappstruktur
+## 📁 Mappstruktur och rollstruktur
 
+Projektet är uppdelat i Ansible-roller där varje roll har ett tydligt och avgränsat ansvar. Detta är ett medvetet designbeslut — en roll per tjänst gör konfigurationen lättare att felsöka, återanvända och bygga vidare på.
+
+| Roll | Ansvar | Varför separat? |
+|------|--------|-----------------|
+| `firewall` | iptables-regler, IP-forwarding, loggning | Brandväggslogiken är oberoende av tjänsterna — kan bytas ut utan att påverka webserver eller databas |
+| `webserver` | Apache-installation, testsida, routing | Isolerad så att webblagret kan skalas eller bytas mot nginx utan att röra övriga roller |
+| `database` | PostgreSQL-installation, lyssnar på rätt IP | Databaskonfiguration hålls separat för att enkelt kunna byta till annan databasmotor |
+| `ssh_hardening` | Root-inloggning, nyckelautentisering, MaxAuthTries | Körs på alla VM:er — en gemensam härdningsroll istället för att upprepa konfiguration i varje roll |
+| `client` | Routing till webserver-nätet | Minimal roll som bara konfigurerar klientens nätverksvägar |
+
+Rollstrukturen följer **principle of least privilege** även på konfigurationsnivå — varje roll gör exakt det den behöver och inget mer.
 
 ```
 double-homed-firewall-project/
 ├── Vagrantfile               # Definierar alla 4 VM:er och nätverk
 ├── setup_keys.sh             # Distribuerar SSH-nycklar
+├── verify.sh                 # Automatiserat verifieringsskript
 ├── README.md
 ├── Diagram_1.png             # Nätverksdiagram
 └── ansible/
@@ -165,7 +177,6 @@ double-homed-firewall-project/
         ├── client/           # Klientkonfiguration
         └── ssh_hardening/    # SSH-härdning på alla VM:er
 ```
-
 ---
 
 *YH Enköping · Virtualiseringsteknik & Automation · Iman Noureddin & Najma Omar Osman*
