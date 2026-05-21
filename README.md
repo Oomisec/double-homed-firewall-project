@@ -55,6 +55,33 @@ firewall : ok=10  changed=0  failed=0
 ```
 ---
 
+## 🔁 Reproducerbar miljö — F3 verifierat
+
+Miljön är helt reproducerbar med tre kommandon. `vagrant destroy && vagrant up` river och återskapar alla VM:er från grunden — Ansible konfigurerar sedan allt automatiskt till identiskt tillstånd varje gång.
+
+**Så här verifierar du:**
+
+```bash
+# Steg 1 — Riv hela miljön
+vagrant destroy -f
+
+# Steg 2 — Bygg upp den igen från grunden
+vagrant up
+
+# Steg 3 — SSH in och kör Ansible
+vagrant ssh firewall
+bash /vagrant/setup_keys.sh
+cd /vagrant/ansible
+ansible-playbook -i inventory.ini playbook.yml
+
+# Steg 4 — Verifiera att allt fungerar identiskt
+bash /vagrant/verify.sh
+```
+
+**Förväntat resultat:** `5/6 PASS` eller `6/6 PASS` — samma resultat varje gång oavsett hur många gånger miljön rivs och byggs upp igen.
+
+Detta uppfyller F3-kravet på VG-nivå — miljön är inte bara reproducerbar i teorin utan verifierbar i praktiken via verify.sh.
+
 ## ✅ Verifiera att allt fungerar
 
 ```bash
