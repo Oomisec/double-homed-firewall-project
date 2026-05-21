@@ -57,6 +57,12 @@ POLICY=$(vagrant ssh firewall -c \
   2>/dev/null | tr -d '\r')
 check "iptables FORWARD policy DROP" "$POLICY" "1"
 
+echo "[6/6] Brandvägg — FW-DROP loggningsregel aktiv"
+LOG=$(vagrant ssh firewall -c \
+  "sudo iptables -L FORWARD | grep -c 'LOG'" \
+  2>/dev/null | tr -d '\r')
+check "FW-DROP loggningsregel aktiv" "$LOG" "1"
+
 echo ""
 echo "========================================"
 if [ $FAIL -eq 0 ]; then
