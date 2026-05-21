@@ -124,6 +124,24 @@ Varje tjänst körs på en dedikerad VM — en server per roll. Om webbservern �
 
 ---
 
+## 📊 Trafikanalys — verifierad segmentering
+
+Segmenteringen är inte bara konfigurerad — den är verifierbar i realtid via iptables paketräknare. Kolumnerna `pkts` och `bytes` i `sudo iptables -L FORWARD -n -v` visar att trafik faktiskt matchat rätt regler.
+
+| Regel | Source → Destination | Port | Verifierad trafik |
+|-------|---------------------|------|-------------------|
+| Klient → webbserver | 10.0.1.2 → 10.0.4.2 | 80 | Paket matchar ACCEPT-regeln efter `curl http://10.0.4.2` |
+| Webbserver → databas | 10.0.4.2 → 10.0.3.2 | 5432 | Paket matchar ACCEPT-regeln efter `nc -zv 10.0.3.2 5432` |
+| Klient → databas direkt | 10.0.1.2 → 10.0.3.2 | 80 | Paket loggas med FW-DROP och droppas — ingen ACCEPT-regel matchar |
+
+Detta visar att segmenteringen fungerar på paketnikå — inte bara att tjänsterna svarar, utan att rätt regler träffas av rätt trafik.
+
+Verifiera själv:
+```bash
+vagrant ssh firewall
+sudo iptables -L FORWARD -n -v
+```
+
 ## Hotmodellering (STRIDE-inspirerad)
 
 | Hot | Kategori | Sannolikhet | Konsekvens | Implementerad motåtgärd |
