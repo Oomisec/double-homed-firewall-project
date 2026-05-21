@@ -169,7 +169,7 @@ vagrant ssh firewall
 sudo iptables -L FORWARD -n -v
 ```
 
-## Hotmodellering (STRIDE-inspirerad)
+## 🔍 Hotmodellering (STRIDE-inspirerad)
 
 | Hot | Kategori | Sannolikhet | Konsekvens | Implementerad motåtgärd |
 |-----|----------|-------------|------------|-------------------------|
@@ -181,12 +181,19 @@ sudo iptables -L FORWARD -n -v
 
 ---
 
-## Köra verifieringsskriptet
+## 🚀 Köra verifieringsskriptet
 
-Automatiserat skript som verifierar alla trafikflöden utan manuella steg:
+Automatiserat skript som verifierar alla trafikflöden utan manuella steg. Kör inifrån firewall-VM:en:
 
 ```bash
-bash verify.sh
+vagrant ssh firewall
+bash /vagrant/verify.sh
+```
+
+Förväntat resultat:
+
+```
+9/9 PASS — alla tester godkända
 ```
 
 
