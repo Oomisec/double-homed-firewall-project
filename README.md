@@ -169,6 +169,27 @@ vagrant ssh firewall
 sudo iptables -L FORWARD -n -v
 ```
 
+## 🐍 Python-anslutningstest — applikationsnivå
+
+Webbservern kan nå databasen inte bara på nätverksnivå (port 5432 öppen) utan även på applikationsnivå via en faktisk PostgreSQL-anslutning med Python.
+
+Kör testet från firewall-terminalen:
+
+```bash
+ssh -o StrictHostKeyChecking=no -i ~/.ssh/vagrant_keys/webserver vagrant@10.0.4.2 "python3 /vagrant/db_test.py"
+```
+
+Förväntat resultat: 
+```
+PASS  Anslutning lyckades!
+PostgreSQL-version: PostgreSQL 14.22
+Databas: appdb · Användare: webuser
+PASS  Webbservern kan nå databasen på applikationsnivå
+```
+
+Detta bevisar att brandväggsreglerna tillåter exakt rätt trafik — webbservern når databasen på applikationsnivå medan klienten är blockerad.
+
+
 ## 🔍 Hotmodellering (STRIDE-inspirerad)
 
 | Hot | Kategori | Sannolikhet | Konsekvens | Implementerad motåtgärd |
