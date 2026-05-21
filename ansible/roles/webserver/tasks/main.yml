@@ -26,6 +26,14 @@
       </html>
     dest: /var/www/html/index.html
 
+- name: Installera Python3 och psycopg2
+  apt:
+    name:
+      - python3-pip
+      - python3-psycopg2
+    state: present
+    update_cache: yes
+
 - name: Lägg till route till client-nät
   command: ip route add 10.0.1.0/24 via 10.0.4.1
   ignore_errors: yes
