@@ -1,5 +1,8 @@
 # 🔒 Double-homed Firewall Projekt
 
+> Kursprojekt inom YH-utbildningen IT-säkerhetsingenjör, Yrkeshögskolan Enköping.
+
+
 ![platform](https://img.shields.io/badge/platform-Ubuntu%2022.04-E95420?style=flat) ![vagrant](https://img.shields.io/badge/vagrant-2.x-1563FF?style=flat) ![ansible](https://img.shields.io/badge/ansible-automated-EE0000?style=flat) ![firewall](https://img.shields.io/badge/firewall-iptables-7B42BC?style=flat)
 
 Nätverkssegmentering med en dedikerad brandvägg som kontrollerar all trafik mellan tre isolerade zoner. Hela miljön är automatiserad med Ansible och startas med ett enda kommando.
@@ -91,8 +94,8 @@ curl http://10.0.4.2
 # Förväntat: HTML-sida från Apache
 
 # Test 2 — Klient når INTE databasen (ska blockeras)
-curl --connect-timeout 5 http://10.0.3.2
-# Förväntat: Connection timeout
+nc -zv -w 5 10.0.3.2 5432
+# Förväntat: Connection timed out
 
 # Test 3 — Webbserver når databasen (ska fungera)
 vagrant ssh webserver
@@ -108,7 +111,7 @@ Varje åtgärd är kopplad till ett konkret hot och verifierbar i miljön.
 
 | Åtgärd | Vad den gör | Skyddar mot | Verifiering |
 |--------|-------------|-------------|-------------|
-| ✅ Nätverkssegmentering | Delar upp miljön i tre isolerade zoner via VirtualBox intnet. VM:er kan inte kommunicera direkt — all trafik tvingas via brandväggen. | Lateral movement — om webbservern komprometteras kan angriparen inte nå databasen direkt. | `curl --connect-timeout 5 10.0.3.2` från client → timeout |
+| ✅ Nätverkssegmentering | Delar upp miljön i tre isolerade zoner via VirtualBox intnet. VM:er kan inte kommunicera direkt — all trafik tvingas via brandväggen. | Lateral movement — om webbservern komprometteras kan angriparen inte nå databasen direkt. | `nc -zv -w 5 10.0.3.2 5432` från client → timeout |
 | ✅ iptables DROP-policy | Blockerar all trafik som standard. Öppnar enbart port 80 och port 5432 med specifika source/destination IP. | Principle of least privilege — angripare kan inte skanna eller nå andra portar. | `sudo iptables -L FORWARD -n -v` visar specifika IP på varje ACCEPT-regel |
 | ✅ SSH-härdning | Inaktiverar root-inloggning, kräver nyckelbaserad autentisering, sätter MaxAuthTries till 3. Konfigureras via Ansible på alla VM:er. | Brute force och credential stuffing — root-kontot är vanligaste målet vid automatiserade attacker. | `grep 'PermitRootLogin\|PasswordAuthentication\|MaxAuthTries' /etc/ssh/sshd_config` |
 | ✅ FW-DROP loggning | Alla blockerade paket loggas med prefixet FW-DROP i kernel-loggen via iptables LOG-regel i Ansible-rollen. | Oupptäckta intrångsförsök — utan loggning syns inte portskanning eller attacker. | `sudo dmesg \| grep "FW-DROP"` visar blockerade försök i realtid |
@@ -158,9 +161,9 @@ Segmenteringen är inte bara konfigurerad — den är verifierbar i realtid via 
 |-------|---------------------|------|-------------------|
 | Klient → webbserver | 10.0.1.2 → 10.0.4.2 | 80 | Paket matchar ACCEPT-regeln efter `curl http://10.0.4.2` |
 | Webbserver → databas | 10.0.4.2 → 10.0.3.2 | 5432 | Paket matchar ACCEPT-regeln efter `nc -zv 10.0.3.2 5432` |
-| Klient → databas direkt | 10.0.1.2 → 10.0.3.2 | 80 | Paket loggas med FW-DROP och droppas — ingen ACCEPT-regel matchar |
+| Klient → databas direkt | 10.0.1.2 → 10.0.3.2 | 5432 | Paket loggas med FW-DROP och droppas — ingen ACCEPT-regel matchar |
 
-Detta visar att segmenteringen fungerar på paketnikå — inte bara att tjänsterna svarar, utan att rätt regler träffas av rätt trafik.
+Detta visar att segmenteringen fungerar på paketnivå — inte bara att tjänsterna svarar, utan att rätt regler träffas av rätt trafik.
 
 Verifiera själv:
 ```bash
@@ -196,8 +199,8 @@ Detta bevisar att brandväggsreglerna tillåter exakt rätt trafik — webbserve
 | Angripare brute-forcar SSH | Spoofing | Hög | Hög | MaxAuthTries 3, nyckelautentisering, root-inloggning inaktiverad |
 | Komprometterad webbserver når databasen | Elevation of Privilege | Medel | Kritisk | Segmentering + DROP-policy, webb→databas endast port 5432 |
 | Portskanning av interna nät | Information Disclosure | Hög | Medel | DROP-policy ger inget svar — portar avslöjas inte |
-| Avlyssning av databasanslutning | Information Disclosure | Låg | Hög | Ej åtgärdat — identifierat som brist nr 2 |
-| Tjänstkrasch går oupptäckt | Denial of Service | Medel | Medel | Ej åtgärdat — identifierat som brist nr 5 |
+| Avlyssning av databasanslutning | Information Disclosure | Låg | Hög | Ej åtgärdat — identifierat som brist nr 1 |
+| Tjänstkrasch går oupptäckt | Denial of Service | Medel | Medel | Ej åtgärdat — identifierat som brist nr 4 |
 
 ---
 
